@@ -1,16 +1,19 @@
 def get_valid_input():
-    entry = input("Enter stock quantity: ")
+    name = input("Enter Product Name: ")
 
-    if entry == "quit":
+    if name == "quit":
         return "quit"
-    elif entry.startswith("-") and entry[1:].isdigit():
+
+    entry = input("Enter Quantity: ")
+
+    if entry.startswith("-") and entry[1:].isdigit():
         print("ERROR: Negative stock is not allowed. Entry rejected.")
         return None
     elif not entry.isdigit():
         print("ERROR: Please enter a whole number. Entry rejected.")
         return None
     else:
-        return int(entry)
+        return name, int(entry)
 
 
 def process_delivery(current_total, new_value):
@@ -45,7 +48,7 @@ def generate_report(total_units, failed_attempts):
 
 print("====================================")
 print("Smart Inventory Auditor")
-print("Enter a stock quantity, or type 'quit' to stop.")
+print("Enter a product name, or type 'quit' to stop.")
 print("====================================")
 
 total_inventory, history = load_inventory()
@@ -66,10 +69,15 @@ while True:
     elif value is None:
         rejected_entries += 1
     else:
-        total_inventory = process_delivery(total_inventory, value)
+        name, qty = value
+        order_id = history[-1][0] + 1 if history else 1001
+        history.append((order_id, name, qty))
+        total_inventory = process_delivery(total_inventory, qty)
         deliveries_processed += 1
-        tax = calculate_tax(value)
-        print("Accepted:", value, "units. Total inventory:", total_inventory)
-        print("Tax for this delivery:", tax)
+        print("\nNew Order Added:")
+        print(str(order_id) + "," + name + "," + str(qty))
+        print("Accepted:", qty, "units. Total inventory:", total_inventory)
+        print("Tax for this delivery:", calculate_tax(qty))
+        print()
 
 generate_report(deliveries_processed, rejected_entries)
