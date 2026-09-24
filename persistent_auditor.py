@@ -39,6 +39,13 @@ def load_inventory():
     return total, history
 
 
+def save_inventory(total, history):
+    with open("inventory.txt", "w") as f:
+        f.write(str(total) + "\n")
+        for order_id, name, qty in history:
+            f.write(str(order_id) + "," + name + "," + str(qty) + "\n")
+
+
 def generate_report(total_units, failed_attempts):
     print("\nAudit Report")
     print("=====================")
@@ -80,4 +87,6 @@ while True:
         print("Tax for this delivery:", calculate_tax(qty))
         print()
 
+save_inventory(total_inventory, history)
+print("\nOrder successfully saved to inventory.txt")
 generate_report(deliveries_processed, rejected_entries)
