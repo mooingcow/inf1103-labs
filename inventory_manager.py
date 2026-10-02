@@ -1,4 +1,23 @@
+import json
+import os
+
+FILENAME = "inventory.json"
 LINE = "------------------------------------------------"
+
+
+def load_inventory():
+    if os.path.exists(FILENAME):
+        print(FILENAME + " found.")
+        try:
+            with open(FILENAME, "r") as f:
+                inventory = json.load(f)
+            print("Inventory loaded successfully.")
+            return inventory
+        except (json.JSONDecodeError, ValueError):
+            print("ERROR: " + FILENAME + " is corrupted. Starting with an empty inventory.")
+            return []
+    print(FILENAME + " not found. Starting with an empty inventory.")
+    return []
 
 
 def find_product(inventory, product_id):
@@ -105,11 +124,7 @@ print("========================================")
 print("INVENTORY MANAGEMENT SYSTEM")
 print("========================================\n")
 
-inventory = [
-    {"id": "P001", "name": "Laptop", "price": 1200.00, "stock": 15},
-    {"id": "P002", "name": "Mouse", "price": 25.50, "stock": 40},
-    {"id": "P003", "name": "Keyboard", "price": 45.00, "stock": 25},
-]
+inventory = load_inventory()
 show_menu()
 
 while True:
