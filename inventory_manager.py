@@ -1,35 +1,6 @@
-import json
-import os
-
-FILENAME = "inventory.json"
-LINE = "------------------------------------------------"
-
-
-def load_inventory():
-    if os.path.exists(FILENAME):
-        print(FILENAME + " found.")
-        try:
-            with open(FILENAME, "r") as f:
-                inventory = json.load(f)
-            print("Inventory loaded successfully.")
-            return inventory
-        except (json.JSONDecodeError, ValueError):
-            print("ERROR: " + FILENAME + " is corrupted. Starting with an empty inventory.")
-            return []
-    print(FILENAME + " not found. Starting with an empty inventory.")
-    return []
-
-
-def save_inventory(inventory):
-    with open(FILENAME, "w") as f:
-        json.dump(inventory, f, indent=4)
-
-
-def find_product(inventory, product_id):
-    for product in inventory:
-        if product["id"] == product_id:
-            return product
-    return None
+from file_handler import FILENAME, load_inventory, save_inventory
+from inventory import LINE
+from product import Product
 
 
 def get_float(prompt):
@@ -52,66 +23,49 @@ def get_int(prompt):
         print("ERROR: Please enter a non-negative whole number.")
 
 
-def format_product(product):
-    return ("ID: " + product["id"]
-            + " | Name: " + product["name"]
-            + " | Price: $" + format(product["price"], ".2f")
-            + " | Stock: " + str(product["stock"]))
-
-
-def display_all(inventory):
-    print("\nCurrent Inventory")
-    print(LINE)
-    if not inventory:
-        print("No products in inventory.")
-    for product in inventory:
-        print(format_product(product))
-    print(LINE)
-
-
 def add_product(inventory):
     print("\nAdd New Product")
     product_id = input("Product ID: ").strip().upper()
     if not product_id:
         print("\nERROR: Product ID cannot be empty.")
         return
-    if find_product(inventory, product_id) is not None:
+    if inventory.search_product(product_id) is not None:
         print("\nERROR: Product ID already exists.")
         return
     name = input("Product Name: ").strip()
     price = get_float("Price: ")
     stock = get_int("Stock Quantity: ")
-    inventory.append({"id": product_id, "name": name, "price": price, "stock": stock})
+    inventory.add_product(Product(product_id, name, price, stock))
     print("\nProduct added successfully!")
 
 
 def update_stock(inventory):
     print("\nUpdate Stock")
     product_id = input("Enter Product ID: ").strip().upper()
-    product = find_product(inventory, product_id)
+    product = inventory.search_product(product_id)
     if product is None:
         print("\nProduct not found.")
         return
     print("\nProduct Found:")
-    print("Name: " + product["name"])
-    print("Current Stock: " + str(product["stock"]))
-    product["stock"] = get_int("\nNew Stock Quantity: ")
-    print("\nStock updated successfully!")
+    print("Name: " + product.get_name())
+    print("Current Stock: " + str(product.get_stock()))
+    if product.update_stock(get_int("\nNew Stock Quantity: ")):
+        print("\nStock updated successfully!")
 
 
 def search_product(inventory):
     print("\nSearch Product")
     product_id = input("Enter Product ID: ").strip().upper()
-    product = find_product(inventory, product_id)
+    product = inventory.search_product(product_id)
     if product is None:
         print("\nProduct not found.")
         return
     print("\nProduct Found")
     print(LINE)
-    print("ID: " + product["id"])
-    print("Name: " + product["name"])
-    print("Price: $" + format(product["price"], ".2f"))
-    print("Stock: " + str(product["stock"]))
+    print("ID: " + product.get_product_id())
+    print("Name: " + product.get_name())
+    print("Price: $" + format(product.get_price(), ".2f"))
+    print("Stock: " + str(product.get_stock()))
     print(LINE)
 
 
@@ -137,7 +91,7 @@ while True:
     option = input("\nEnter option: ").strip()
 
     if option == "1":
-        display_all(inventory)
+        inventory.display_all()
     elif option == "2":
         add_product(inventory)
     elif option == "3":
